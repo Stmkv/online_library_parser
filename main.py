@@ -34,12 +34,23 @@ def save_book_txt(id, book, book_name):
         f.close()
 
 
-def get_title_and_author(response):
+def save_book_comments(comments, book_name):
+    if not os.path.exists("Comments"):
+        os.makedirs("Comments")
+    with open(f"./{"Comments"}/{book_name}.txt", "w") as file:
+        for comment in comments:
+            file.write(f"{comment}\n\n")
+        file.close()
+
+
+def parse_book_page(response):
     soup = BeautifulSoup(response.text, "lxml")
     title_and_author = soup.find(id="content").find("h1").text
     title, author = tuple(title_and_author.split(" \xa0 :: \xa0 "))
     image_path = soup.find(class_="bookimage").find("img")["src"]
-    return sanitize_filename(title), author, image_path
+    comments = soup.find_all("div", class_="texts")
+    all_comments = [comment.find("span").text for comment in comments]
+    return sanitize_filename(title), author, image_path, all_comments
 
 
 def fetch_book_info(book_id):
@@ -78,10 +89,11 @@ if __name__ == "__main__":
         try:
             book = get_book(id)
             response_info = fetch_book_info(id)
-            title, author, image_path = get_title_and_author(response_info)
+            title, author, image_path, comments = parse_book_page(response_info)
             save_book_txt(id, book, title)
             image = fetch_book_cover(image_path)
             _, img_ext = tuple(image_path.split("."))
             save_book_image(image, img_ext, title)
+            save_book_comments(comments, title)
         except requests.HTTPError:
             continue
