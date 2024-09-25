@@ -43,6 +43,15 @@ def save_book_comments(comments, book_name):
         file.close()
 
 
+def save_book_genre(genres, book_name):
+    if not os.path.exists("Genres"):
+        os.makedirs("Genres")
+    with open(f"./{"Genres"}/{book_name}.txt", "w") as file:
+        for genre in genres:
+            file.write(f"{genre}\n\n")
+        file.close()
+
+
 def parse_book_page(response):
     soup = BeautifulSoup(response.text, "lxml")
     title_and_author = soup.find(id="content").find("h1").text
@@ -50,7 +59,9 @@ def parse_book_page(response):
     image_path = soup.find(class_="bookimage").find("img")["src"]
     comments = soup.find_all("div", class_="texts")
     all_comments = [comment.find("span").text for comment in comments]
-    return sanitize_filename(title), author, image_path, all_comments
+    genre = soup.find_all("span", class_="d_book")
+    all_genres = [genre.text for genre in genre]
+    return sanitize_filename(title), author, image_path, all_comments, all_genres
 
 
 def fetch_book_info(book_id):
@@ -89,11 +100,12 @@ if __name__ == "__main__":
         try:
             book = get_book(id)
             response_info = fetch_book_info(id)
-            title, author, image_path, comments = parse_book_page(response_info)
+            title, author, image_path, comments, genres = parse_book_page(response_info)
             save_book_txt(id, book, title)
             image = fetch_book_cover(image_path)
             _, img_ext = tuple(image_path.split("."))
             save_book_image(image, img_ext, title)
             save_book_comments(comments, title)
+            save_book_genre(genres, title)
         except requests.HTTPError:
             continue
