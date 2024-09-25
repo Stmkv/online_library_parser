@@ -1,16 +1,11 @@
+import argparse
 import os
+import re
 from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
-
-BASE_URL = "https://tululu.org/"
-
-
-def chek_folder():
-    if not os.path.exists("books"):
-        os.makedirs("books")
 
 
 def check_for_redirect(response):
@@ -72,7 +67,7 @@ def fetch_book_info(book_id):
     return response
 
 
-def fetch_book_cover(cover_path):
+def fetch_book_image(cover_path):
     cover_url = f"https://tululu.org{cover_path}"
     response = requests.get(url=cover_url)
     response.raise_for_status()
@@ -88,21 +83,31 @@ def get_book(book_id):
     return response.content
 
 
-def get_book_image(response):
-    soup = BeautifulSoup(response.text, "lxml")
-    image = soup.find("div", class_="bookimage").find("img")["src"]
-    print(urljoin(BASE_URL, image))
+def get_range():
+    parser = argparse.ArgumentParser(description="Скачивает выбранные книги с тулулу")
+    parser.add_argument(
+        "left_border",
+        type=int,
+        default=0,
+    )
+    parser.add_argument(
+        "right_border",
+        type=int,
+        default=10,
+    )
+    args = parser.parse_args()
+    return args.left_border, args.right_border
 
 
 if __name__ == "__main__":
-    chek_folder()
-    for id in range(1, 11):
+    left_border, right_border = get_range()
+    for id in range(left_border, right_border + 1):
         try:
             book = get_book(id)
             response_info = fetch_book_info(id)
             title, author, image_path, comments, genres = parse_book_page(response_info)
             save_book_txt(id, book, title)
-            image = fetch_book_cover(image_path)
+            image = fetch_book_image(image_path)
             _, img_ext = tuple(image_path.split("."))
             save_book_image(image, img_ext, title)
             save_book_comments(comments, title)
