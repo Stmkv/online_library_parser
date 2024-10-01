@@ -9,24 +9,19 @@ from parser_response_tools import fetch_book_image, fetch_book_response, get_boo
 
 
 def save_book_image(cover, img_ext, book_name):
-    if not os.path.exists("Images"):
-        os.makedirs("Images")
+    os.makedirs("Images", exist_ok=True)
     with open(f"./{'Images'}/{book_name}.{img_ext}", "wb") as f:
         f.write(cover)
-        f.close()
 
 
 def save_book_txt(id, book, book_name):
-    if not os.path.exists("Books"):
-        os.makedirs("Books")
+    os.makedirs("Books", exist_ok=True)
     with open(f"./{"Books"}/{id}. {book_name}.txt", "wb") as f:
         f.write(book)
-        f.close()
 
 
 def save_book_comments(comments, book_name):
-    if not os.path.exists("Comments"):
-        os.makedirs("Comments")
+    os.makedirs("Comments", exist_ok=True)
     with open(f"./{"Comments"}/{book_name}.txt", "w") as file:
         for comment in comments:
             file.write(f"{comment}\n\n")
