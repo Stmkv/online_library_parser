@@ -57,7 +57,7 @@ def parse_book_page(response):
     return sanitize_filename(title), author, image_path, all_comments, all_genres
 
 
-def fetch_book_info(book_id):
+def fetch_book_response(book_id):
     url = f"https://tululu.org/b{book_id}/"
     response = requests.get(url)
     response.raise_for_status()
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     for book_id in range(left_border, right_border + 1):
         try:
             book = get_book(book_id)
-            response = fetch_book_info(book_id)
+            response = fetch_book_response(book_id)
             title, author, image_path, comments, genres = parse_book_page(response)
             save_book_txt(book_id, book, title)
             image = fetch_book_image(image_path)
