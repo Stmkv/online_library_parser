@@ -81,7 +81,7 @@ def get_book(book_id):
     return response.content
 
 
-def get_range():
+def get_range_book_id():
     parser = argparse.ArgumentParser(description="Скачивает выбранные книги с тулулу")
     parser.add_argument(
         "left_border",
@@ -98,13 +98,13 @@ def get_range():
 
 
 if __name__ == "__main__":
-    left_border, right_border = get_range()
-    for id in range(left_border, right_border + 1):
+    left_border, right_border = get_range_book_id()
+    for book_id in range(left_border, right_border + 1):
         try:
-            book = get_book(id)
-            response_info = fetch_book_info(id)
-            title, author, image_path, comments, genres = parse_book_page(response_info)
-            save_book_txt(id, book, title)
+            book = get_book(book_id)
+            response = fetch_book_info(book_id)
+            title, author, image_path, comments, genres = parse_book_page(response)
+            save_book_txt(book_id, book, title)
             image = fetch_book_image(image_path)
             _, img_ext = tuple(image_path.split("."))
             save_book_image(image, img_ext, title)
