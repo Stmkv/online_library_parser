@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 import requests
 
 
@@ -15,7 +17,7 @@ def fetch_book_response(book_id):
 
 
 def fetch_book_image(cover_path):
-    cover_url = f"https://tululu.org{cover_path}"
+    cover_url = urljoin("https://tululu.org/", cover_path)
     response = requests.get(url=cover_url)
     response.raise_for_status()
     check_for_redirect(response)
