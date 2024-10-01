@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 
 import requests
@@ -7,6 +8,8 @@ from pathvalidate import sanitize_filename
 
 from parser_response_tools import fetch_book_image, fetch_book_response, get_book
 from save_book_tools import save_book_comments, save_book_genre
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def save_book_image(cover, img_ext, book_name):
@@ -63,4 +66,5 @@ if __name__ == "__main__":
             save_book_comments(comments, title)
             save_book_genre(genres, title)
         except requests.HTTPError:
+            logging.info("Не удалось загрузить книгу с id = " + str(book_id))
             continue
