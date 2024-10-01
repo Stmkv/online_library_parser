@@ -9,7 +9,7 @@ from pathvalidate import sanitize_filename
 from parser_response_tools import fetch_book_image, fetch_book_response, get_book
 from save_book_tools import save_book_comments, save_book_genre
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def save_book_image(cover, img_ext, book_name):
