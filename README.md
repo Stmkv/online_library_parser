@@ -4,7 +4,11 @@
 
 ### Как установить
 
-Для запуска скрипта нужен [Python3](https://www.python.org/downloads/). Также необходимо скачать зависимости из файла requirements.txt. Скачать можно командой `pip install -r requirements`
+Для запуска скрипта нужен [Python3](https://www.python.org/downloads/). Также необходимо скачать зависимости из файла requirements.txt. Скачать можно командой
+
+```
+pip install -r requirements
+```
 
 ### Аргументы
 
@@ -12,7 +16,9 @@
 
 Пример запуска кода:
 
-`python tululu.py 0 10` - Команда скачает первые 10 книг с сайта.
+```
+python tululu.py 0 10
+```
 
 ### Цель проекта
 
