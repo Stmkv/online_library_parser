@@ -5,10 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 
-
-def check_for_redirect(response):
-    if response.history:
-        raise requests.HTTPError()
+from parser_response_tools import fetch_book_image, fetch_book_response, get_book
 
 
 def save_book_image(cover, img_ext, book_name):
@@ -55,30 +52,6 @@ def parse_book_page(response):
     genre = soup.find_all("span", class_="d_book")
     all_genres = [genre.text for genre in genre]
     return sanitize_filename(title), author, image_path, all_comments, all_genres
-
-
-def fetch_book_response(book_id):
-    url = f"https://tululu.org/b{book_id}/"
-    response = requests.get(url)
-    response.raise_for_status()
-    check_for_redirect(response)
-    return response
-
-
-def fetch_book_image(cover_path):
-    cover_url = f"https://tululu.org{cover_path}"
-    response = requests.get(url=cover_url)
-    response.raise_for_status()
-    check_for_redirect(response)
-    return response.content
-
-
-def get_book(book_id):
-    url = "https://tululu.org/txt.php"
-    response = requests.get(url, params={"id": book_id})
-    response.raise_for_status()
-    check_for_redirect(response)
-    return response.content
 
 
 def get_range_book_id():
