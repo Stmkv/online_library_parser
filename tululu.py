@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 
 from parser_response_tools import fetch_book_image, fetch_book_response, get_book
+from save_book_tools import save_book_comments, save_book_genre
 
 
 def save_book_image(cover, img_ext, book_name):
@@ -18,23 +19,6 @@ def save_book_txt(id, book, book_name):
     os.makedirs("Books", exist_ok=True)
     with open(f"./{"Books"}/{id}. {book_name}.txt", "wb") as f:
         f.write(book)
-
-
-def save_book_comments(comments, book_name):
-    os.makedirs("Comments", exist_ok=True)
-    with open(f"./{"Comments"}/{book_name}.txt", "w") as file:
-        for comment in comments:
-            file.write(f"{comment}\n\n")
-        file.close()
-
-
-def save_book_genre(genres, book_name):
-    if not os.path.exists("Genres"):
-        os.makedirs("Genres")
-    with open(f"./{"Genres"}/{book_name}.txt", "w") as file:
-        for genre in genres:
-            file.write(f"{genre}\n\n")
-        file.close()
 
 
 def parse_book_page(response):
