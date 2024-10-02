@@ -14,19 +14,10 @@ def check_for_redirect(response):
 
 def fetch_book_response(book_id, retries=3):
     url = f"https://tululu.org/b{book_id}/"
-    waiting_time = 0
-    attempt = 0
-    while attempt < retries:
-        try:
-            response = requests.get(url, timeout=1)
-            response.raise_for_status()
-            check_for_redirect(response)
-            return response
-        except requests.exceptions:
-            logging.info(f"Attempt {attempt} failed, retrying")
-        attempt += 1
-        time.sleep(waiting_time)
-        waiting_time += 1
+    response = requests.get(url, timeout=1)
+    response.raise_for_status()
+    check_for_redirect(response)
+    return response
 
 
 def fetch_content_book(book_id=None, cover_path=None):

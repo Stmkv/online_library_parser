@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
@@ -46,16 +47,27 @@ def get_range_book_id():
 if __name__ == "__main__":
     left_border, right_border = get_range_book_id()
     for book_id in range(left_border, right_border + 1):
-        try:
-            book = fetch_content_book(book_id=book_id)
-            response = fetch_book_response(book_id)
-            title, author, image_path, comments, genres = parse_book_page(response)
-            image = fetch_content_book(cover_path=image_path)
-            _, img_ext = tuple(image_path.split("."))
-            save_to_file(book, "Books", f"{book_id}. {title}", extension="txt")
-            save_to_file(image, "Image", title, extension=img_ext)
-            save_to_file(comments, "Comments", title)
-            save_to_file(genres, "Genres", title)
-        except requests.HTTPError:
-            logging.info("Не удалось загрузить книгу с id = " + str(book_id))
-            continue
+        retries = 3
+        attempt = 0
+        while attempt < retries:
+            try:
+                book = fetch_content_book(book_id=book_id)
+                response = fetch_book_response(book_id)
+                title, author, image_path, comments, genres = parse_book_page(response)
+                image = fetch_content_book(cover_path=image_path)
+                _, img_ext = tuple(image_path.split("."))
+                save_to_file(book, "Books", f"{book_id}. {title}", extension="txt")
+                save_to_file(image, "Image", title, extension=img_ext)
+                save_to_file(comments, "Comments", title)
+                save_to_file(genres, "Genres", title)
+                break
+            except requests.HTTPError:
+                logging.info("Не удалось загрузить книгу с id = " + str(book_id))
+                sleep(1)
+                attempt += 1
+                continue
+            except requests.ConnectionError:
+                logging.info("Не удалось подключиться к серверу")
+                sleep(1)
+                attempt += 1
+                continue
