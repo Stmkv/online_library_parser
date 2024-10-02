@@ -50,11 +50,12 @@ if __name__ == "__main__":
         attempt = 0
         while attempt < retries:
             try:
-                book = fetch_content_book(book_id=book_id)
                 response = fetch_book_response(book_id)
-
                 title, author, image_path, comments, genres = parse_book_page(response)
-                image = fetch_content_book(response.url, cover_path=image_path)
+
+                book = fetch_content_book(book_id=book_id)
+                image = fetch_content_book(base_url=response.url, cover_path=image_path)
+
                 _, img_ext = tuple(image_path.split("."))
 
                 save_to_file(book, "Books", f"{book_id}. {title}")

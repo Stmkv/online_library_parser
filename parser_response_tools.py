@@ -12,7 +12,7 @@ def check_for_redirect(response):
         raise requests.HTTPError()
 
 
-def fetch_book_response(book_id, retries=3):
+def fetch_book_response(book_id):
     url = f"https://tululu.org/b{book_id}/"
     response = requests.get(url, timeout=1)
     response.raise_for_status()
