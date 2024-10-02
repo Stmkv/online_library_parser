@@ -29,17 +29,13 @@ def fetch_book_response(book_id, retries=3):
         waiting_time += 1
 
 
-def fetch_book_image(cover_path):
-    cover_url = urljoin("https://tululu.org/", cover_path)
-    response = requests.get(url=cover_url)
-    response.raise_for_status()
-    check_for_redirect(response)
-    return response.content
-
-
-def get_book(book_id):
-    url = "https://tululu.org/txt.php"
-    response = requests.get(url, params={"id": book_id})
+def fetch_content_book(book_id=None, cover_path=None):
+    if book_id is not None:
+        url = "https://tululu.org/txt.php"
+        response = requests.get(url, params={"id": book_id})
+    else:
+        cover_url = urljoin("https://tululu.org/", cover_path)
+        response = requests.get(url=cover_url)
     response.raise_for_status()
     check_for_redirect(response)
     return response.content

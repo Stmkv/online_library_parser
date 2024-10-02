@@ -6,22 +6,13 @@ import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 
-from parser_response_tools import fetch_book_image, fetch_book_response, get_book
-from save_book_tools import save_book_comments, save_book_genre
+from parser_response_tools import (
+    fetch_book_response,
+    fetch_content_book,
+)
+from save_book_tools import save_to_file
 
 logging.basicConfig(level=logging.INFO)
-
-
-def save_book_image(cover, img_ext, book_name):
-    os.makedirs("Images", exist_ok=True)
-    with open(f"./{'Images'}/{book_name}.{img_ext}", "wb") as f:
-        f.write(cover)
-
-
-def save_book_txt(id, book, book_name):
-    os.makedirs("Books", exist_ok=True)
-    with open(f"./{"Books"}/{id}. {book_name}.txt", "wb") as f:
-        f.write(book)
 
 
 def parse_book_page(response):
@@ -56,15 +47,15 @@ if __name__ == "__main__":
     left_border, right_border = get_range_book_id()
     for book_id in range(left_border, right_border + 1):
         try:
-            book = get_book(book_id)
+            book = fetch_content_book(book_id=book_id)
             response = fetch_book_response(book_id)
             title, author, image_path, comments, genres = parse_book_page(response)
-            save_book_txt(book_id, book, title)
-            image = fetch_book_image(image_path)
+            image = fetch_content_book(cover_path=image_path)
             _, img_ext = tuple(image_path.split("."))
-            save_book_image(image, img_ext, title)
-            save_book_comments(comments, title)
-            save_book_genre(genres, title)
+            save_to_file(book, "Books", f"{book_id}. {title}", extension="txt")
+            save_to_file(image, "Image", title, extension=img_ext)
+            save_to_file(comments, "Comments", title)
+            save_to_file(genres, "Genres", title)
         except requests.HTTPError:
             logging.info("Не удалось загрузить книгу с id = " + str(book_id))
             continue
