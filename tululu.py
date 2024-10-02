@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from time import sleep
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -53,9 +54,11 @@ if __name__ == "__main__":
             try:
                 book = fetch_content_book(book_id=book_id)
                 response = fetch_book_response(book_id)
+
                 title, author, image_path, comments, genres = parse_book_page(response)
-                image = fetch_content_book(cover_path=image_path)
+                image = fetch_content_book(response.url, cover_path=image_path)
                 _, img_ext = tuple(image_path.split("."))
+
                 save_to_file(book, "Books", f"{book_id}. {title}", extension="txt")
                 save_to_file(image, "Image", title, extension=img_ext)
                 save_to_file(comments, "Comments", title)
