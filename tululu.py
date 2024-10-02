@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 image = fetch_content_book(response.url, cover_path=image_path)
                 _, img_ext = tuple(image_path.split("."))
 
-                save_to_file(book, "Books", f"{book_id}. {title}", extension="txt")
+                save_to_file(book, "Books", f"{book_id}. {title}")
                 save_to_file(image, "Image", title, extension=img_ext)
                 save_to_file(comments, "Comments", title)
                 save_to_file(genres, "Genres", title)
