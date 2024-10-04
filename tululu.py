@@ -12,8 +12,6 @@ from parser_response_tools import (
 )
 from save_book_tools import save_to_file
 
-logging.basicConfig(level=logging.INFO)
-
 
 def parse_book_page(response):
     soup = BeautifulSoup(response.text, "lxml")
@@ -44,6 +42,7 @@ def get_range_book_id():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     left_border, right_border = get_range_book_id()
     for book_id in range(left_border, right_border + 1):
         retries = 3
@@ -71,7 +70,7 @@ if __name__ == "__main__":
                 save_to_file(genres, "Genres", title)
                 break
             except requests.HTTPError:
-                logging.info("Не удалось загрузить книгу с id = " + str(book_id))
+                logging.info(f"Не удалось загрузить книгу с id = {str(book_id)}")
                 sleep(1)
                 attempt += 1
                 continue
