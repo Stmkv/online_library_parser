@@ -1,6 +1,7 @@
 import argparse
 import logging
 from time import sleep
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -8,7 +9,6 @@ from pathvalidate import sanitize_filename
 
 from parser_response_tools import (
     fetch_book_response,
-    fetch_content_book,
 )
 from save_book_tools import save_to_file
 
@@ -50,16 +50,23 @@ if __name__ == "__main__":
         attempt = 0
         while attempt < retries:
             try:
-                response = fetch_book_response(book_id)
+                book_url = f"https://tululu.org/b{book_id}/"
+                response = fetch_book_response(book_url)
+
                 title, author, image_path, comments, genres = parse_book_page(response)
 
-                book = fetch_content_book(book_id=book_id)
-                image = fetch_content_book(base_url=response.url, cover_path=image_path)
+                download_book_url = "https://tululu.org/txt.php"
+                book = fetch_book_response(
+                    url=download_book_url, params={"id": book_id}
+                )
+
+                cover_url = urljoin(response.url, image_path)
+                image = fetch_book_response(url=cover_url)
 
                 _, img_ext = tuple(image_path.split("."))
 
-                save_to_file(book, "Books", f"{book_id}. {title}")
-                save_to_file(image, "Image", title, extension=img_ext)
+                save_to_file(book.content, "Books", f"{book_id}. {title}")
+                save_to_file(image.content, "Image", title, extension=img_ext)
                 save_to_file(comments, "Comments", title)
                 save_to_file(genres, "Genres", title)
                 break
