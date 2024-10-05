@@ -37,7 +37,10 @@ while start_page <= end_page:
         # Скачиваем книгу
         download_book_url = "https://tululu.org/txt.php"
         book = fetch_book_response(url=download_book_url, params={"id": book_id})
-        save_to_file(book.content, "Books", f"{book_id}. {title}")
+        # save_to_file(book.content, "Books", f"{book_id}. {title}")
         # Скачиваем изображение
-
+        cover_url = urljoin(response.url, image_path)
+        image = fetch_book_response(url=cover_url)
+        _, img_ext = tuple(image_path.split("."))
+        save_to_file(image.content, "Image", title, extension=img_ext)
     start_page += 1
