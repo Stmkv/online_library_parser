@@ -1,6 +1,9 @@
+import argparse
 import json
 import logging
+import os
 import re
+from gettext import Catalog
 from time import sleep
 from urllib.parse import urljoin
 
@@ -28,11 +31,46 @@ def get_cleaned_comments(comments: list) -> list:
     return cleaned_comments
 
 
+def get_settings_parser():
+    parser = argparse.ArgumentParser(description="Скачивает книги с сайта tululu.org")
+    parser.add_argument(
+        "--start_page",
+        type=int,
+        default=1,
+        help="номер страницы, с которой начать скачивание",
+    )
+    parser.add_argument(
+        "--end_page",
+        type=int,
+        default=702,
+        help="номер страницы, которой закончить скачивание",
+    )
+    parser.add_argument(
+        "--skip_txt", action="store_true", default=False, help="не скачивать книги"
+    )
+    parser.add_argument(
+        "--skip_img", action="store_true", default=False, help="не скачивать обложки"
+    )
+    parser.add_argument(
+        "--dest_folder",
+        type=str,
+        default="",
+        help="путь к каталогу с книгами, обложками, JSON",
+    )
+    args = parser.parse_args()
+    return (
+        args.start_page,
+        args.end_page,
+        args.skip_txt,
+        args.skip_img,
+        args.dest_folder,
+    )
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    start_page = 1
-    end_page = 1
+    start_page, end_page, skip_txt, skip_img, dest_folder = get_settings_parser()
     #! TODO добавить обработку последней страницы
     all_books = []
     for page in range(start_page, end_page + 1):
@@ -59,21 +97,35 @@ if __name__ == "__main__":
                     cleaned_comments = get_cleaned_comments(comments)
                     book_id = get_book_id(part_link)
                     # Скачиваем книгу
+
                     download_book_url = "https://tululu.org/txt.php"
                     book = fetch_book_response(
                         url=download_book_url, params={"id": book_id}
                     )
 
-                    if book.content:
-                        save_to_file(book.content, "Books", f"{book_id}. {title}")
+                    if book.content and not skip_txt:
+                        save_to_file(
+                            content=book.content,
+                            directory=dest_folder,
+                            name_folder="books",
+                            file_name=f"{book_id}. {title}",
+                        )
                     else:
                         break
 
                     # Скачиваем изображение
+
                     cover_url = urljoin(response.url, image_path)
                     image = fetch_book_response(url=cover_url)
                     _, img_ext = tuple(image_path.split("."))
-                    save_to_file(image.content, "Image", title, extension=img_ext)
+                    if not skip_img:
+                        save_to_file(
+                            content=image.content,
+                            directory=dest_folder,
+                            name_folder="image",
+                            file_name=title,
+                            extension=img_ext,
+                        )
 
                     # Создаем json файл
                     book_path = f"Books/{title}.txt"
@@ -102,5 +154,5 @@ if __name__ == "__main__":
 
     books_json = json.dumps(all_books, ensure_ascii=False, indent=3)
 
-    with open("books.json", "w") as my_file:
+    with open(os.path.join(dest_folder, "books.json"), "w") as my_file:
         my_file.write(books_json)

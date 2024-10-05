@@ -30,7 +30,6 @@ def parse_book_page(response):
     genre_selector = "span.d_book"
     genre = soup.select(genre_selector)
     all_genres = [genre.text for genre in genre]
-    print(all_genres)
     return sanitize_filename(title), author, image_path, all_comments, all_genres
 
 
