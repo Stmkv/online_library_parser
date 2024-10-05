@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+import sys
 from gettext import Catalog
 from time import sleep
 from urllib.parse import urljoin
@@ -71,12 +72,14 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     start_page, end_page, skip_txt, skip_img, dest_folder = get_settings_parser()
-    #! TODO добавить обработку последней страницы
     all_books = []
     for page in range(start_page, end_page + 1):
         BOOKS_FANTASY_URL = urljoin("https://tululu.org/l55/", str(page))
-        response = fetch_book_response(BOOKS_FANTASY_URL)
-
+        try:
+            response = fetch_book_response(BOOKS_FANTASY_URL)
+        except requests.HTTPError:
+            logging.error("Заданная страница не существует")
+            sys.exit()
         soup = BeautifulSoup(response.text, "lxml")
         cart_book_selector = "div.bookimage"
         carts_books = soup.select(cart_book_selector)
@@ -110,8 +113,6 @@ if __name__ == "__main__":
                             name_folder="books",
                             file_name=f"{book_id}. {title}",
                         )
-                    else:
-                        break
 
                     # Скачиваем изображение
 
@@ -152,7 +153,7 @@ if __name__ == "__main__":
                     sleep(1)
                     continue
 
+    os.makedirs(dest_folder, exist_ok=True)
     books_json = json.dumps(all_books, ensure_ascii=False, indent=3)
-
     with open(os.path.join(dest_folder, "books.json"), "w") as my_file:
         my_file.write(books_json)
