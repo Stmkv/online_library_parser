@@ -15,13 +15,22 @@ from save_book_tools import save_to_file
 
 def parse_book_page(response):
     soup = BeautifulSoup(response.text, "lxml")
-    title_and_author = soup.find(id="content").find("h1").text
+
+    title_and_author_selector = "#content > h1"
+    title_and_author = soup.select_one(title_and_author_selector).text
     title, author = tuple(title_and_author.split(" \xa0 :: \xa0 "))
-    image_path = soup.find(class_="bookimage").find("img")["src"]
-    comments = soup.find_all("div", class_="texts")
+
+    image_selector = ".bookimage img"
+    image_path = soup.select_one(image_selector)["src"]
+
+    comment_selector = "div .texts"
+    comments = soup.select(comment_selector)
     all_comments = [comment.find("span").text for comment in comments]
-    genre = soup.find_all("span", class_="d_book")
+
+    genre_selector = "span.d_book"
+    genre = soup.select(genre_selector)
     all_genres = [genre.text for genre in genre]
+    print(all_genres)
     return sanitize_filename(title), author, image_path, all_comments, all_genres
 
 
