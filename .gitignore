@@ -4,3 +4,4 @@ Genres
 Comments
 Books
 __pycache__
+.mypy_cache
