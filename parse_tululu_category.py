@@ -24,16 +24,14 @@ def get_book_url(cart) -> str:
 
 def save_books_to_json_file(user_folder, books):
     os.makedirs(user_folder, exist_ok=True)
-    books_json = json.dumps(books, ensure_ascii=False, indent=3)
     with open(os.path.join(user_folder, "books.json"), "w") as file:
-        file.write(books_json)
+        json.dump(books, file, ensure_ascii=False, indent=3)
 
 
 def get_cleaned_book_id(link: str) -> str:
     math = re.search(r"\d+", link)
     if math:
         book_id = math.group()
-        print(book_id)
     else:
         logging.info(f"Не удалось получить id книги из ссылки {link}")
     return book_id
@@ -116,23 +114,27 @@ if __name__ == "__main__":
                     cleaned_comments = get_cleaned_comments(comments)
                     cleaned_book_id = get_cleaned_book_id(book_url)
 
-                    download_book_url = "https://tululu.org/txt.php"
-                    book = fetch_book_response(
-                        url=download_book_url, params={"id": cleaned_book_id}
-                    )
-
-                    if book.content and not skip_txt:
-                        save_to_file(
-                            content=book.content,
-                            directory=dest_folder,
-                            name_folder="books",
-                            file_name=f"{cleaned_book_id}. {title}",
+                    if not skip_txt:
+                        download_book_url = "https://tululu.org/txt.php"
+                        book = fetch_book_response(
+                            url=download_book_url, params={"id": cleaned_book_id}
                         )
+                        if book.content:
+                            save_to_file(
+                                content=book.content,
+                                directory=dest_folder,
+                                name_folder="books",
+                                file_name=f"{cleaned_book_id}. {title}",
+                            )
+                        else:
+                            logging.info(
+                                f"В книге с id {cleaned_book_id} не найден текст"
+                            )
 
-                    cover_url = urljoin(response.url, image_path)
-                    image = fetch_book_response(url=cover_url)
-                    _, img_ext = tuple(image_path.split("."))
                     if not skip_img:
+                        cover_url = urljoin(response.url, image_path)
+                        image = fetch_book_response(url=cover_url)
+                        _, img_ext = tuple(image_path.split("."))
                         save_to_file(
                             content=image.content,
                             directory=dest_folder,
