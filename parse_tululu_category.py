@@ -15,24 +15,27 @@ from save_book_tools import save_to_file
 from tululu import parse_book_page
 
 
-def get_book_url(cart) -> list:
+def get_book_url(cart) -> str:
     link_selector = "a"
-    book_id = cart.select_one(link_selector)["href"]
-    link = urljoin(base_url, book_id)
-    return [link, book_id]
+    book_url = cart.select_one(link_selector)["href"]
+    link = urljoin(base_url, book_url)
+    return link
 
 
 def save_books_to_json_file(user_folder, books):
     os.makedirs(user_folder, exist_ok=True)
     books_json = json.dumps(books, ensure_ascii=False, indent=3)
-    with open(os.path.join(user_folder, "books.json"), "w") as my_file:
-        my_file.write(books_json)
+    with open(os.path.join(user_folder, "books.json"), "w") as file:
+        file.write(books_json)
 
 
 def get_cleaned_book_id(link: str) -> str:
     math = re.search(r"\d+", link)
     if math:
         book_id = math.group()
+        print(book_id)
+    else:
+        logging.info(f"Не удалось получить id книги из ссылки {link}")
     return book_id
 
 
@@ -91,7 +94,10 @@ if __name__ == "__main__":
             response = fetch_book_response(books_fantasy_url)
         except requests.HTTPError:
             logging.error("Заданная страница не существует")
-            sys.exit()
+            continue
+        except requests.ConnectionError:
+            logging.info("Не удалось подключиться к серверу")
+            continue
         soup = BeautifulSoup(response.text, "lxml")
         cart_book_selector = "div.bookimage"
         carts_books = soup.select(cart_book_selector)
@@ -101,14 +107,14 @@ if __name__ == "__main__":
             attempt = 0
             while attempt < retries:
                 try:
-                    book_url, book_id = get_book_url(cart)
+                    book_url = get_book_url(cart)
                     response = fetch_book_response(book_url)
                     title, author, image_path, comments, genres = parse_book_page(
                         response
                     )
 
                     cleaned_comments = get_cleaned_comments(comments)
-                    cleaned_book_id = get_cleaned_book_id(book_id)
+                    cleaned_book_id = get_cleaned_book_id(book_url)
 
                     download_book_url = "https://tululu.org/txt.php"
                     book = fetch_book_response(
