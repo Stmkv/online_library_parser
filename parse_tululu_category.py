@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import re
-import sys
 from time import sleep
 from urllib.parse import urljoin
 
@@ -15,7 +14,7 @@ from save_book_tools import save_to_file
 from tululu import parse_book_page
 
 
-def get_book_url(cart) -> str:
+def get_book_url(cart, base_url) -> str:
     link_selector = "a"
     book_url = cart.select_one(link_selector)["href"]
     link = urljoin(base_url, book_url)
@@ -34,6 +33,7 @@ def get_cleaned_book_id(link: str) -> str:
         book_id = math.group()
     else:
         logging.info(f"Не удалось получить id книги из ссылки {link}")
+        raise UnboundLocalError
     return book_id
 
 
@@ -92,9 +92,11 @@ if __name__ == "__main__":
             response = fetch_book_response(books_fantasy_url)
         except requests.HTTPError:
             logging.error("Заданная страница не существует")
+            sleep(1)
             continue
         except requests.ConnectionError:
             logging.info("Не удалось подключиться к серверу")
+            sleep(1)
             continue
         soup = BeautifulSoup(response.text, "lxml")
         cart_book_selector = "div.bookimage"
@@ -105,7 +107,7 @@ if __name__ == "__main__":
             attempt = 0
             while attempt < retries:
                 try:
-                    book_url = get_book_url(cart)
+                    book_url = get_book_url(cart, base_url)
                     response = fetch_book_response(book_url)
                     title, author, image_path, comments, genres = parse_book_page(
                         response
@@ -119,17 +121,14 @@ if __name__ == "__main__":
                         book = fetch_book_response(
                             url=download_book_url, params={"id": cleaned_book_id}
                         )
-                        if book.content:
-                            save_to_file(
-                                content=book.content,
-                                directory=dest_folder,
-                                name_folder="books",
-                                file_name=f"{cleaned_book_id}. {title}",
-                            )
-                        else:
-                            logging.info(
-                                f"В книге с id {cleaned_book_id} не найден текст"
-                            )
+                        save_to_file(
+                            content=book.content,
+                            directory=dest_folder,
+                            name_folder="books",
+                            file_name=f"{cleaned_book_id}. {title}",
+                        )
+                    else:
+                        logging.info(f"В книге с id {cleaned_book_id} не найден текст")
 
                     if not skip_img:
                         cover_url = urljoin(response.url, image_path)
@@ -166,6 +165,11 @@ if __name__ == "__main__":
                     continue
                 except requests.ConnectionError:
                     logging.info("Не удалось подключиться к серверу")
+                    attempt += 1
+                    sleep(1)
+                    continue
+                except UnboundLocalError:
+                    logging.info(f"Не удалось получить id книги из ссылки {book_url}")
                     attempt += 1
                     sleep(1)
                     continue
