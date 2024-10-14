@@ -142,8 +142,8 @@ if __name__ == "__main__":
                             extension=img_ext,
                         )
 
-                    book_path = f"Books/{title}.txt"
-                    image_src = f"Image/{title}.{img_ext}"
+                    book_path = f"books/books/{cleaned_book_id}. {title}.txt"
+                    image_src = f"books/image/{title}.{img_ext}"
                     all_books.append(
                         {
                             "title": title,

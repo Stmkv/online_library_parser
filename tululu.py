@@ -27,7 +27,7 @@ def parse_book_page(response):
     comments = soup.select(comment_selector)
     all_comments = [comment.find("span").text for comment in comments]
 
-    genre_selector = "span.d_book"
+    genre_selector = "span.d_book a"
     genre = soup.select(genre_selector)
     all_genres = [genre.text for genre in genre]
     return sanitize_filename(title), author, image_path, all_comments, all_genres
